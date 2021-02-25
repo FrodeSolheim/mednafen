@@ -1,0 +1,5 @@
+/_build
+/lib*.so*
+/mednafen
+/*.sfc
+/_sources

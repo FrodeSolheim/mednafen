@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+. fsdeps/system.sh
+
+cd _build
+./configure --prefix=/dev/null \
+--without-libsndfile
+if [ "$SYSTEM" = "Linux" ]; then
+sed -i 's/HAVE_LINUX_JOYSTICK/HAVE_LINUX_JOYSTICK_XXX/g' include/config.h
+fi

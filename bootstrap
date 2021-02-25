@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+python3 download.py \
+https://mednafen.github.io/releases/files/mednafen-1.26.1.tar.xz \
+sha256:842907c25c4292c9ba497c9cb9229c7d10e04e22cb4740d154ab690e6587fdf4
+
+rm -Rf _build
+# mkdir _build
+# rm -Rf mednafen mednafen-1.22.2
+# cd _build
+tar xf ../_sources/mednafen-1.26.1.tar.xz
+mv mednafen _build
+# mv mednafen mednafen-1.22.2
+# cd mednafen
