@@ -4,7 +4,7 @@
 set -e
 
 . ./PACKAGE.FS
-. fsbuild/common.inc.sh
+. fsbuild/common.sh
 
 mkdir -p fsbuild/_dist
 

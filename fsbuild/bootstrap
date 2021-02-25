@@ -3,8 +3,8 @@
 
 set -e
 
-if [ -f fsbuild/bootstrap.inc.sh ]; then
-. fsbuild/bootstrap.inc.sh
+if [ -f fsbuild/bootstrap.sh ]; then
+. fsbuild/bootstrap.sh
 elif [ -f fsplugin/Makefile ]; then
 make -C fsplugin bootstrap
 elif [ -f ./bootstrap ]; then

@@ -3,8 +3,8 @@
 
 set -e
 
-if [ -f fsbuild/make.inc.sh ]; then
-. fsbuild/make.inc.sh
+if [ -f fsbuild/build.sh ]; then
+. fsbuild/build.sh
 elif [ -f fsplugin/Makefile ]; then
 make -C fsplugin "$@"
 elif [ -f ./Makefile ]; then

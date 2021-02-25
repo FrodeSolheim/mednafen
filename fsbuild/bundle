@@ -15,9 +15,9 @@ rm -Rf $PLUGIN_DIR
 
 LIBGPG_ERROR_CHECK=0 python3 fsbuild/standalone.py $PLUGIN_BIN_DIR
 
-elif [ -f fsbuild/bundle.inc.sh ]; then
+elif [ -f fsbuild/bundle.sh ]; then
 
-. fsbuild/bundle.inc.sh
+. fsbuild/bundle.sh
 
 elif [ -f fsplugin/Makefile ]; then
 # make -C fsplugin fsemu-plugin-prep

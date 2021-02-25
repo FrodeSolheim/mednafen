@@ -14,6 +14,7 @@ mednafen${exe}: _build/src/mednafen${exe}
 	cp _build/src/mednafen${exe} mednafen${exe}
 
 clean:
-	make -C _build clean
+	if [ -d _build ]; then \
+		make -C _build clean; fi
 	# rm -Rf build.fs dist.fs
 	rm -f mednafen${exe}
