@@ -78,13 +78,13 @@ def fix_linux_binary(path):
         if no_copy:
             print("no_copy is set")
             continue
+        included_libraries.setdefault(library_source, set()).add(path)
         dst = os.path.join(os.path.dirname(path), library)
         if not os.path.exists(dst):
-            print("[FSBUILD] Copy", library_source)
+            print("[FSBUILD] Copy", library_source)
             print("Needed by:", path)
             shutil.copy(library_source, dst)
             os.chmod(dst, 0o644)
-            included_libraries.setdefault(library_source, set()).add(path)
             changes += 1
     if strip:
         # strip does not work after patchelf has been run
@@ -287,7 +287,7 @@ def fix_macos_binary(path, frameworks_dir):
         else:
             dst = os.path.join(frameworks_dir, os.path.basename(old))
             if not os.path.exists(dst):
-                print("[FSBUILD] Copy", old)
+                print("[FSBUILD] Copy", old)
                 shutil.copy(old, dst)
                 os.chmod(dst, 0o644)
                 changes += 1
@@ -328,6 +328,64 @@ def macos_iteration(app):
     return changes
 
 
+def fix_macos_binary_2(path, frameworks_dir):
+    print("fixing", path)
+    changes = 0
+    if not os.path.exists(path):
+        raise Exception("could not find " + repr(path))
+    args = ["otool", "-L", path]
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    # noinspection PyUnresolvedReferences
+    data = p.stdout.read().decode("UTF-8")
+    p.wait()
+    for line in data.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("/usr/lib") or line.startswith("/System"):
+            # old = line.split(" ")[0]
+            continue
+        if line.startswith("@executable_path"):
+            continue
+        old = line.split(" ")[0]
+        if "Contents" in old:
+            continue
+        print(old)
+        old_dir, name = os.path.split(old)
+        new = old.replace(old, "@executable_path/../Frameworks/" + name)
+        dst = os.path.join(frameworks_dir, os.path.basename(old))
+        if not os.path.exists(dst):
+            print("COPYLIB", old)
+            shutil.copy(old, dst)
+            os.chmod(dst, 0o644)
+            changes += 1
+        if os.path.basename(path) == os.path.basename(old):
+            args = ["install_name_tool", "-id", new, path]
+        else:
+            args = ["install_name_tool", "-change", old, new, path]
+        print(args)
+        p = subprocess.Popen(args)
+        assert p.wait() == 0
+    return changes
+
+
+def macos_iteration_2(app):
+    binaries = []
+    mac_os_dir = os.path.join(app, "Contents", "MacOS")
+    frameworks_dir = os.path.join(app, "Contents", "Frameworks")
+    if not os.path.exists(frameworks_dir):
+        os.makedirs(frameworks_dir)
+    for name in os.listdir(mac_os_dir):
+        binaries.append(os.path.join(mac_os_dir, name))
+    # if os.path.exists(frameworks_dir):
+    for name in os.listdir(frameworks_dir):
+        binaries.append(os.path.join(frameworks_dir, name))
+    changes = 0
+    for binary in binaries:
+        changes += fix_macos_binary_2(binary, frameworks_dir)
+    return changes
+
+
 def macos_main():
     global rpath, no_copy
     if "--rpath" in sys.argv:
@@ -336,15 +394,20 @@ def macos_main():
     if "--no-copy" in sys.argv:
         sys.argv.remove("--no-copy")
         no_copy = True
-    app = sys.argv[1]
-    while True:
-        changes = macos_iteration(app)
-        if changes == 0:
-            break
+    app_dir = sys.argv[1]
+    for item in os.listdir(app_dir):
+        if not item.endswith(".app"):
+            continue
+        app = os.path.join(app_dir, item)
+        while True:
+            changes = macos_iteration_2(app)
+            if changes == 0:
+                break
 
 
 windows_system_dlls = [
     "advapi32.dll",
+    "dinput.dll",
     "dsound.dll",
     "dwmapi.dll",
     "gdi32.dll",
@@ -374,6 +437,7 @@ def fix_windows_binary(path, app_dir):
     if path.endswith(".txt"):
         return 0
     print("fixing", path)
+    fix_dll_name = os.path.basename(path).lower()
     changes = 0
     if not os.path.exists(path):
         raise Exception("could not find " + repr(path))
@@ -391,24 +455,32 @@ def fix_windows_binary(path, app_dir):
             continue
         if line.endswith("Summary"):
             break
-        if not line.endswith(".dll"):
+        if line.startswith("Dump of file"):
+            continue
+        if line.startswith("File Type:"):
+            continue
+        if not line.lower().endswith(".dll"):
             continue
         src = line
         if src.lower() in windows_system_dlls:
+            excluded_libraries.setdefault(src.lower(), set()).add(fix_dll_name)
             continue
         dll_name = src
         print(dll_name)
 
         if True:
+            src = os.path.join("fsdeps", "_prefix", "bin", dll_name)
+            print("Checking", src)
+            if not os.path.exists(src):
+                src = os.environ["MINGW_PREFIX"] + "/bin/" + dll_name
+                print("Checking", src)
+            print(src)
+            included_libraries.setdefault(src, set()).add(
+                fix_dll_name
+            )
             dst = os.path.join(app_dir, os.path.basename(src))
             if not os.path.exists(dst):
-                src = os.path.join("fsdeps", "_prefix", "bin", dll_name)
-                print("Checking", src)
-                if not os.path.exists(src):
-                    src = os.environ["MINGW_PREFIX"] + "/bin/" + dll_name
-                    print("Checking", src)
-                print(src)
-                print("[FSBUILD] Copy", src)
+                print("[FSBUILD] Copy", src)
                 shutil.copy(src, dst)
                 os.chmod(dst, 0o644)
                 changes += 1
@@ -459,14 +531,14 @@ if __name__ == "__main__":
     if excluded_libraries:
         print("")
         for library in sorted(excluded_libraries.keys()):
-            print("[FSBUILD] Exclude", library)
+            print("[FSBUILD] Exclude", library)
             for dependent in sorted(excluded_libraries[library]):
                 print("  - depended on by", os.path.basename(dependent))
         # print("Included libraries:")
     if included_libraries:
         print("")
         for library in sorted(included_libraries.keys()):
-            print("[FSBUILD] Include", os.path.basename(library))
+            print("[FSBUILD] Include", os.path.basename(library))
             print("  - from", os.path.dirname(library))
             for dependent in sorted(included_libraries[library]):
                 print("  - depended on by", os.path.basename(dependent))
