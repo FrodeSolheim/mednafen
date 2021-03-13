@@ -8,12 +8,12 @@ endif
 all: build mednafen${exe}
 
 build:
-	make -C _build
+	make -C fsbuild/_build/mednafen-src
 
-mednafen${exe}: _build/src/mednafen${exe}
-	cp _build/src/mednafen${exe} mednafen${exe}
+mednafen${exe}: fsbuild/_build/mednafen-src/src/mednafen${exe}
+	cp fsbuild/_build/mednafen-src/src/mednafen${exe} mednafen${exe}
 
 clean:
-	if [ -d _build ]; then \
-		make -C _build clean; fi
+	if [ -d fsbuild/_build/mednafen-src ]; then \
+		make -C fsbuild/_build/mednafen-src clean; fi
 	rm -f mednafen${exe}

@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-. fsdeps/system.sh
+. fsbuild/system.sh
 
-cd _build
+cd fsbuild/_build/mednafen-src
 ./configure --prefix=/dev/null \
 --without-libsndfile
-if [ "$SYSTEM" = "Linux" ]; then
+if [ "$SYSTEM_OS" = "Linux" ]; then
 sed -i 's/HAVE_LINUX_JOYSTICK/HAVE_LINUX_JOYSTICK_XXX/g' include/config.h
 fi
