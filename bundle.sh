@@ -11,6 +11,6 @@ mkdir -p $PLUGIN_READMEDIR
 cp README.md $PLUGIN_READMEDIR/ReadMe.txt
 
 mkdir -p $PLUGIN_LICENSESDIR
-cp _build/COPYING $PLUGIN_LICENSESDIR/Mednafen.txt
+cp fsbuild/_build/mednafen-src/COPYING $PLUGIN_LICENSESDIR/Mednafen.txt
 
 . fsbuild/plugin.post.sh
