@@ -1,6 +1,6 @@
 /_build
+/*.dll
 /lib*.so*
 /mednafen
 /mednafen.exe
 /*.sfc
-/_sources
