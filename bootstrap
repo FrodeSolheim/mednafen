@@ -4,13 +4,13 @@ set -e
 rm -f mednafen
 rm -Rf fsbuild/_build
 
-echo "Downloading mednafen-1.26.1.tar.xz..."
-URL=https://mednafen.github.io/releases/files/mednafen-1.26.1.tar.xz
-SHA256=842907c25c4292c9ba497c9cb9229c7d10e04e22cb4740d154ab690e6587fdf4
+echo "Downloading mednafen-1.27.1.tar.xz..."
+URL=https://mednafen.github.io/releases/files/mednafen-1.27.1.tar.xz
+SHA256=f3a89b2f32f40c3232593808d05e0c21cbdf443688ace04c9c27e4cf4d5955fb
 python3 fsbuild/download.py "$URL" sha256:$SHA256
 
-echo "Extracting mednafen-1.26.1.tar.xz..."
+echo "Extracting mednafen-1.27.1.tar.xz..."
 mkdir -p fsbuild/_build
 cd fsbuild/_build
-tar xf ../_sources/mednafen-1.26.1.tar.xz
+tar xf ../_sources/mednafen-1.27.1.tar.xz
 mv mednafen mednafen-src
