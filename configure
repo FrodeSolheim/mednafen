@@ -6,6 +6,12 @@ set -e
 cd fsbuild/_build/mednafen-src
 ./configure --prefix=/dev/null \
 --without-libsndfile
+
 if [ "$SYSTEM_OS" = "Linux" ]; then
 sed -i 's/HAVE_LINUX_JOYSTICK/HAVE_LINUX_JOYSTICK_XXX/g' include/config.h
+fi
+
+if [ "$SYSTEM_OS" = "Windows" ]; then
+sed -i 's/mingw_app_type/__mingw_app_type/g' src/drivers/main.cpp
+sed -i 's/____mingw_app_type/__mingw_app_type/g' src/drivers/main.cpp
 fi
