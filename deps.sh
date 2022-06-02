@@ -1,2 +1,2 @@
-fsdeps/dep/SDL2
-fsdeps/dep/zlib
+fsdeps/packages/SDL2
+fsdeps/packages/zlib
