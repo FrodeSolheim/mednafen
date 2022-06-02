@@ -45,7 +45,7 @@ def main():
         print("Failed to download")
         sys.exit(1)
 
-    if not verify():
+    if not verify(archive, h, checksum):
         sys.exit(2)
 
 
